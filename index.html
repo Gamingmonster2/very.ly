@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr" class="h-full scroll-smooth">
 <head>
@@ -72,7 +71,7 @@
 
     <!-- PyScript Environment Configuration -->
     <py-config>
-        packages = ["pillow", "rembg"]
+        packages = ["opencv-python", "pillow"]
     </py-config>
 
     <!-- Background Decorative Elements (Iridescent Spheres) -->
@@ -338,8 +337,9 @@
     <script type="py">
         import io
         import base64
+        import cv2
+        import numpy as np
         from PIL import Image
-        from rembg import remove
         from pyodide.ffi import create_proxy
         import asyncio
         from js import document, Uint8Array
@@ -384,8 +384,49 @@
                 # Open PIL Image
                 input_image = Image.open(io.BytesIO(bytes_data))
                 
-                # Run the Core Background Removal Logic (rembg)
-                output_image = remove(input_image)
+                # Convert PIL Image to numpy array for OpenCV
+                img = np.array(input_image)
+                
+                # Handle different color channels
+                if len(img.shape) == 2:
+                    # Grayscale to RGB
+                    img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+                elif img.shape[2] == 4:
+                    # RGBA to RGB
+                    img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+                elif img.shape[2] == 3:
+                    # Ensure it is RGB
+                    pass
+
+                h, w, _ = img.shape
+                
+                # Define bounding box for GrabCut (5% margin from edges)
+                margin_w = max(1, int(w * 0.05))
+                margin_h = max(1, int(h * 0.05))
+                rect = (margin_w, margin_h, w - 2 * margin_w, h - 2 * margin_h)
+                
+                # Initialize mask and models
+                mask = np.zeros((h, w), np.uint8)
+                bgdModel = np.zeros((1, 65), np.float64)
+                fgdModel = np.zeros((1, 65), np.float64)
+                
+                # Run GrabCut (using 3 iterations for speed in browser)
+                cv2.grabCut(img, mask, rect, bgdModel, fgdModel, 3, cv2.GC_INIT_WITH_RECT)
+                
+                # Create mask where background is 0, foreground is 1
+                # 0 = definite background, 2 = probable background
+                # 1 = definite foreground, 3 = probable foreground
+                mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+                
+                # Create alpha channel (0 for background, 255 for foreground)
+                alpha = (mask2 * 255).astype(np.uint8)
+                
+                # Split channels of original image and merge with alpha
+                r, g, b = cv2.split(img)
+                rgba = cv2.merge([r, g, b, alpha])
+                
+                # Convert back to PIL Image
+                output_image = Image.fromarray(rgba)
 
                 # Save the Output transparent image as PNG format
                 output_buffer = io.BytesIO()
