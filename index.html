@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>very.ly — High-Performance Gaming Hub</title>
+    <meta name="description" content="A minimalist, ultra-responsive single-page gaming platform featuring instant-play micro-apps.">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#030712',
+                            800: '#0B1329',
+                            700: '#1C2541',
+                            600: '#3B486F',
+                        },
+                        accent: {
+                            blue: '#3B82F6',
+                            blueGlow: '#60A5FA',
+                            gold: '#F59E0B',
+                            goldGlow: '#FBBF24',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out infinite 3s',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) scale(1)' },
+                            '50%': { transform: 'translateY(-10px) scale(1.03)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(59, 130, 246, 0.2), 0 0 10px rgba(245, 158, 11, 0.1)' },
+                            '100%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.6), 0 0 30px rgba(245, 158, 11, 0.4)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS for custom scrollbars and extra performance tweaks -->
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1C2541;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+        /* Hide scrollbar for utility elements */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-slate-100 antialiased selection:bg-accent-blue/30 selection:text-accent-goldGlow">
+
+    <!-- Dynamic Background Glows (Iridescent Pearl & Blue/Gold Accents) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-accent-blue/10 to-transparent blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-accent-gold/5 to-transparent blur-[150px]"></div>
+        <div class="absolute top-[40%] left-[30%] w-[400px] h-[400px] rounded-full bg-accent-blue/5 blur-[100px] animate-pulse-slow"></div>
+    </div>
+
+    <!-- HEADER SECTION -->
+    <header class="sticky top-0 z-50 backdrop-blur-md border-b border-white/5 bg-dark-900/80 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Logo with dynamic gold/blue glowing dot -->
+            <a href="#" class="flex items-center gap-2 group" aria-label="very.ly home">
+                <span class="text-2xl font-extrabold tracking-tight text-white transition-colors duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-accent-goldGlow">
+                    very<span class="text-accent-blue font-light">.ly</span>
+                </span>
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-gold opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-accent-blue"></span>
+                </span>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-8" aria-label="Main Navigation">
+                <a href="#games" class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200">Game Library</a>
+                <a href="#performance" class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200">Performance</a>
+                <a href="#docs" class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200">Documentation</a>
+            </nav>
+
+            <!-- Action Trigger / System Status -->
+            <div class="flex items-center gap-4">
+                <button onclick="togglePerformanceMode()" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-dark-800 border border-white/5 hover:border-accent-blue/30 text-xs font-semibold text-slate-300 transition-all duration-300" aria-label="Toggle Engine Mode">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Engine: <span id="engine-status" class="text-accent-blueGlow">Overclocked</span>
+                </button>
+                <a href="#games" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blueGlow hover:to-accent-blue text-xs font-bold text-white tracking-wider uppercase shadow-lg shadow-accent-blue/20 transition-all duration-300 transform hover:-translate-y-0.5" aria-label="Play Games Now">
+                    Play Now
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="relative z-10 max-w-7xl mx-auto px-6 py-12">
+
+        <!-- CORE FIVE-RECTANGLE LAYOUT CONTAINER -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-24">
+            
+            <!-- RECTANGLE 1: THE HERO SECTION (Spans 2 Columns) -->
+            <section class="lg:col-span-2 bg-gradient-to-br from-dark-800/80 to-dark-900/90 border border-white/5 rounded-3xl p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden group hover:border-accent-blue/20 transition-all duration-500 shadow-2xl">
+                <!-- Decorative Holographic Mesh Background -->
+                <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none"></div>
+                
+                <div class="relative z-10">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-xs font-semibold text-accent-blueGlow mb-6">
+                        <span class="flex h-2 w-2 rounded-full bg-accent-gold animate-pulse"></span>
+                        Next-Gen Web Assembly Gaming
+                    </div>
+                    
+                    <h1 class="text-4xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+                        The Instant-Play <br/>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-blueGlow via-white to-accent-goldGlow">
+                            Gaming Super-App.
+                        </span>
+                    </h1>
+                    
+                    <p class="text-slate-400 text-base lg:text-lg max-w-xl leading-relaxed mb-8">
+                        Zero downloads. Zero friction. Experience hyper-optimized micro-games running directly in your browser at a locked 120 FPS.
+                    </p>
+                </div>
+
+                <!-- Interactive Emoji Playground (Clean, lightweight visual showcase instead of heavy images) -->
+                <div class="relative z-10 flex items-center gap-6 mt-6 bg-dark-900/60 p-4 rounded-2xl border border-white/5 w-fit">
+                    <div class="flex -space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-dark-800 border-2 border-accent-blue flex items-center justify-center text-2xl animate-float" title="Action">🎮</div>
+                        <div class="w-12 h-12 rounded-full bg-dark-800 border-2 border-accent-gold flex items-center justify-center text-2xl animate-float-delayed" title="Speed">⚡</div>
+                        <div class="w-12 h-12 rounded-full bg-dark-800 border-2 border-accent-blue flex items-center justify-center text-2xl animate-float" title="Combat">🔫</div>
+                        <div class="w-12 h-12 rounded-full bg-dark-800 border-2 border-accent-gold flex items-center justify-center text-2xl animate-float-delayed" title="Racing">🏎️</div>
+                    </div>
+                    <div class="text-xs">
+                        <p class="font-bold text-white">Active Ecosystem</p>
+                        <p class="text-slate-400">Pure client-side rendering</p>
+                    </div>
+                </div>
+
+                <!-- Ambient Glow behind the emojis -->
+                <div class="absolute right-[-5%] bottom-[-5%] w-64 h-64 bg-accent-blue/10 rounded-full blur-3xl pointer-events-none group-hover:bg-accent-blue/20 transition-all duration-500"></div>
+            </section>
+
+            <!-- RECTANGLE 5: LIVE PLATFORM STATUS & SIMULATOR (Spans 1 Column) -->
+            <section class="bg-dark-800/50 border border-white/5 rounded-3xl p-8 flex flex-col justify-between hover:border-accent-gold/20 transition-all duration-500 relative overflow-hidden group">
+                <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-accent-blue via-accent-gold to-accent-blue opacity-50"></div>
+                
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-between">
+                        <span>Platform Diagnostics</span>
+                        <span class="text-xs text-accent-gold font-mono uppercase tracking-wider">Live Feed</span>
+                    </h3>
+                    
+                    <!-- Diagnostic Terminal -->
+                    <div class="space-y-4 font-mono text-xs text-slate-400 bg-dark-900/80 p-5 rounded-xl border border-white/5">
+                        <div class="flex justify-between items-center">
+                            <span>API Status:</span>
+                            <span class="text-emerald-400 font-bold flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                ONLINE
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Network Latency:</span>
+                            <span id="latency-val" class="text-accent-blueGlow font-bold">12ms</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Active Instances:</span>
+                            <span id="instances-val" class="text-accent-goldGlow font-bold">4,821</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>WebAssembly Core:</span>
+                            <span class="text-emerald-400">v3.2-Stable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Micro Interaction Panel -->
+                <div class="mt-6 pt-6 border-t border-white/5">
+                    <p class="text-xs text-slate-400 mb-3">Simulate load spike to test responsiveness:</p>
+                    <button onclick="triggerPulseSim()" class="w-full py-2.5 rounded-xl bg-dark-900 border border-white/10 hover:border-accent-gold/50 text-xs font-bold text-slate-200 transition-all duration-300 flex items-center justify-center gap-2 group-hover:bg-dark-800" aria-label="Trigger Diagnostic Pulse">
+                        <svg class="w-4 h-4 text-accent-gold animate-spin" id="pulse-icon" style="animation-play-state: paused;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.2" />
+                        </svg>
+                        <span id="pulse-btn-text">Inject Diagnostic Pulse</span>
+                    </button>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- GAME LIBRARY GRID (RECTANGLES 2, 3, & 4) -->
+        <section id="games" class="mb-24 scroll-mt-24">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <h2 class="text-3xl font-extrabold tracking-tight text-white mb-3">
+                        Curated Micro-Games
+                    </h2>
+                    <p class="text-slate-400 max-w-xl">
+                        Select an instant-play experience below. Each environment is fully isolated and optimized for micro-latency performance.
+                    </p>
+                </div>
+                <div class="mt-6 md:mt-0 flex gap-2 bg-dark-800/80 p-1.5 rounded-full border border-white/5">
+                    <button class="px-4 py-1.5 rounded-full bg-accent-blue text-xs font-bold text-white shadow-md">All Games</button>
+                    <button class="px-4 py-1.5 rounded-full text-xs font-medium text-slate-400 hover:text-white transition-colors">WASM Only</button>
+                </div>
+            </div>
+
+            <!-- The Grid Housing Rectangles 2, 3, 4 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- RECTANGLE 2: Game 1 - Belgian Gun -->
+                <article class="bg-gradient-to-b from-dark-800 to-dark-900 border border-white/5 rounded-3xl p-6 hover:border-accent-gold/40 transition-all duration-500 group relative flex flex-col justify-between shadow-xl">
+                    <div class="absolute inset-0 bg-gradient-to-t from-accent-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl pointer-events-none"></div>
+                    
+                    <div>
+                        <!-- Game Header -->
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-gold/20 to-accent-gold/5 border border-accent-gold/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                🔫
+                            </div>
+                            <span class="px-2.5 py-1 rounded-md bg-accent-gold/10 text-[10px] font-bold tracking-widest text-accent-goldGlow uppercase">
+                                Action / Shooter
+                            </span>
+                        </div>
+
+                        <!-- Game Title & Meta -->
+                        <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-accent-goldGlow transition-colors duration-300">
+                            Belgian Gun
+                        </h3>
+                        <p class="text-xs font-mono text-accent-blueGlow mb-4">v.very.ly</p>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            A precision-based tactical shooting simulation. Test your reflex timing against dynamic, procedurally generated target fields.
+                        </p>
+                    </div>
+
+                    <!-- Action Trigger -->
+                    <button onclick="launchGame('Belgian Gun', 'https://v.very.ly')" class="w-full py-3 rounded-2xl bg-dark-900 border border-white/10 hover:border-accent-gold hover:bg-accent-gold hover:text-dark-900 text-xs font-extrabold tracking-wider uppercase text-slate-200 transition-all duration-300 flex items-center justify-center gap-2" aria-label="Launch Belgian Gun">
+                        <span>Launch Game</span>
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </article>
+
+                <!-- RECTANGLE 3: Game 2 - Racing Cars -->
+                <article class="bg-gradient-to-b from-dark-800 to-dark-900 border border-white/5 rounded-3xl p-6 hover:border-accent-blue/40 transition-all duration-500 group relative flex flex-col justify-between shadow-xl">
+                    <div class="absolute inset-0 bg-gradient-to-t from-accent-blue/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl pointer-events-none"></div>
+                    
+                    <div>
+                        <!-- Game Header -->
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-blue/20 to-accent-blue/5 border border-accent-blue/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                🏎️
+                            </div>
+                            <span class="px-2.5 py-1 rounded-md bg-accent-blue/10 text-[10px] font-bold tracking-widest text-accent-blueGlow uppercase">
+                                Arcade / Speed
+                            </span>
+                        </div>
+
+                        <!-- Game Title & Meta -->
+                        <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-accent-blueGlow transition-colors duration-300">
+                            Racing Cars
+                        </h3>
+                        <p class="text-xs font-mono text-accent-blueGlow mb-4">v2.very.ly</p>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            High-velocity isometric racing. Dodge traffic, master perfect drifts, and climb global telemetry leaderboards in real time.
+                        </p>
+                    </div>
+
+                    <!-- Action Trigger -->
+                    <button onclick="launchGame('Racing Cars', 'https://v2.very.ly')" class="w-full py-3 rounded-2xl bg-dark-900 border border-white/10 hover:border-accent-blue hover:bg-accent-blue hover:text-white text-xs font-extrabold tracking-wider uppercase text-slate-200 transition-all duration-300 flex items-center justify-center gap-2" aria-label="Launch Racing Cars">
+                        <span>Launch Game</span>
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </article>
+
+                <!-- RECTANGLE 4: Game 3 - Racing -->
+                <article class="bg-gradient-to-b from-dark-800 to-dark-900 border border-white/5 rounded-3xl p-6 hover:border-accent-gold/40 transition-all duration-500 group relative flex flex-col justify-between shadow-xl">
+                    <div class="absolute inset-0 bg-gradient-to-t from-accent-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl pointer-events-none"></div>
+                    
+                    <div>
+                        <!-- Game Header -->
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-gold/20 to-accent-gold/5 border border-accent-gold/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                🏁
+                            </div>
+                            <span class="px-2.5 py-1 rounded-md bg-accent-gold/10 text-[10px] font-bold tracking-widest text-accent-goldGlow uppercase">
+                                Simulation
+                            </span>
+                        </div>
+
+                        <!-- Game Title & Meta -->
+                        <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-accent-goldGlow transition-colors duration-300">
+                            Racing
+                        </h3>
+                        <p class="text-xs font-mono text-accent-blueGlow mb-4">v3.very.ly</p>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            The ultimate pure racing simulation. Experience advanced physics, custom vehicle tuning, and ultra-harsh weather mechanics.
+                        </p>
+                    </div>
+
+                    <!-- Action Trigger -->
+                    <button onclick="launchGame('Racing', 'https://v3.very.ly')" class="w-full py-3 rounded-2xl bg-dark-900 border border-white/10 hover:border-accent-gold hover:bg-accent-gold hover:text-dark-900 text-xs font-extrabold tracking-wider uppercase text-slate-200 transition-all duration-300 flex items-center justify-center gap-2" aria-label="Launch Racing">
+                        <span>Launch Game</span>
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- CORE ARCHITECTURE & PERFORMANCE SECTION -->
+        <section id="performance" class="mb-24 py-12 border-t border-white/5 relative">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-xs font-semibold text-accent-goldGlow mb-6">
+                        ⚡ Zero Latency Architecture
+                    </div>
+                    <h2 class="text-3xl lg:text-4xl font-extrabold text-white tracking-tight mb-6">
+                        Engineered for Uncompromising Speed.
+                    </h2>
+                    <p class="text-slate-400 leading-relaxed mb-6">
+                        Our decentralized client-side execution framework compiled directly to WebAssembly guarantees instant startup times and zero runtime server load.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-5 h-5 rounded-full bg-accent-blue/20 flex items-center justify-center text-accent-blueGlow text-xs mt-1">✓</div>
+                            <p class="text-sm text-slate-300"><strong class="text-white">Edge-Compiled Assets:</strong> Served globally via ultra-fast CDN architecture.</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-5 h-5 rounded-full bg-accent-blue/20 flex items-center justify-center text-accent-blueGlow text-xs mt-1">✓</div>
+                            <p class="text-sm text-slate-300"><strong class="text-white">No-Install Execution:</strong> Spin up heavy 3D assets in milliseconds.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Interactive SVG Performance Graph with dynamic rendering -->
+                <div class="bg-dark-800/40 border border-white/5 rounded-3xl p-8 relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Frame Delivery Consistency</span>
+                        <span class="text-xs text-emerald-400 font-mono">120 FPS Stable</span>
+                    </div>
+                    <div class="relative h-48 w-full">
+                        <!-- Custom SVG Chart (Smooth Wave) -->
+                        <svg class="w-full h-full" viewBox="0 0 400 150" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.4"></stop>
+                                    <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"></stop>
+                                </linearGradient>
+                            </defs>
+                            <!-- Grid lines -->
+                            <line x1="0" y1="30" x2="400" y2="30" stroke="#1e293b" stroke-dasharray="4" />
+                            <line x1="0" y1="75" x2="400" y2="75" stroke="#1e293b" stroke-dasharray="4" />
+                            <line x1="0" y1="120" x2="400" y2="120" stroke="#1e293b" stroke-dasharray="4" />
+                            
+                            <!-- Graph line -->
+                            <path d="M0 80 C 50 78, 80 82, 120 75 C 160 68, 200 85, 240 78 C 280 70, 320 72, 360 76 C 380 78, 400 75, 400 75 L 400 150 L 0 150 Z" fill="url(#chart-grad)" />
+                            <path d="M0 80 C 50 78, 80 82, 120 75 C 160 68, 200 85, 240 78 C 280 70, 320 72, 360 76 C 380 78, 400 75, 400 75" fill="none" stroke="#3B82F6" stroke-width="3" />
+                        </svg>
+                        
+                        <!-- Floating point marker -->
+                        <div class="absolute top-[50%] left-[60%] w-3 h-3 bg-accent-gold rounded-full border-2 border-dark-900 animate-ping"></div>
+                        <div class="absolute top-[50%] left-[60%] w-2 h-2 bg-accent-gold rounded-full border border-dark-900"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-6 text-[10px] font-mono text-slate-500">
+                        <span>0ms (Init)</span>
+                        <span>100ms (Load)</span>
+                        <span>200ms (Stable Runtime)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- INTERACTIVE GAME RUNNER MODAL (Pulsing Load State SPA) -->
+    <div id="game-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-900/95 backdrop-blur-xl hidden opacity-0 transition-all duration-300">
+        <div class="relative w-full max-w-5xl bg-dark-800 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-dark-900/80 border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-3.5 w-3.5 rounded-full bg-accent-blue animate-pulse"></span>
+                    <h3 id="modal-game-title" class="text-lg font-bold text-white">Launching Game</h3>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="modal-game-url" class="text-xs font-mono text-slate-500 bg-dark-900 px-3 py-1 rounded-md border border-white/5"></span>
+                    <button onclick="closeGameModal()" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all" aria-label="Close Game Module">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Screen with requested "pulsing" effect -->
+            <div id="modal-loader" class="absolute inset-0 bg-dark-900 flex flex-col items-center justify-center z-20 transition-opacity duration-500">
+                <div class="relative flex items-center justify-center mb-6">
+                    <!-- Triple pulsing ring -->
+                    <div class="absolute w-24 h-24 rounded-full border-4 border-accent-blue/30 animate-ping"></div>
+                    <div class="absolute w-16 h-16 rounded-full border-4 border-accent-gold/20 animate-pulse-slow"></div>
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-blue to-accent-gold flex items-center justify-center text-white font-extrabold text-lg">
+                        V
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2 tracking-wide">Initializing WASM Container</h4>
+                <p id="loader-status" class="text-xs font-mono text-slate-400">Allocating memory heap...</p>
+                
+                <!-- Simulated Progress Bar -->
+                <div class="w-64 h-1.5 bg-dark-800 rounded-full mt-6 overflow-hidden border border-white/5">
+                    <div id="loader-progress" class="h-full bg-gradient-to-r from-accent-blue to-accent-gold transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Game View Container (Simulated/IFrame sandbox) -->
+            <div class="relative w-full aspect-video bg-black flex items-center justify-center">
+                <!-- Iframes would load actual paths, e.g., v.very.ly, v2.very.ly, v3.very.ly -->
+                <div class="text-center p-8">
+                    <span class="text-6xl mb-4 block" id="modal-game-emoji">🎮</span>
+                    <p class="text-slate-400 mb-6">This is a simulated secure high-performance sandbox container running <span id="modal-sandbox-name" class="text-white font-bold"></span>.</p>
+                    <div class="flex justify-center gap-4">
+                        <button onclick="simulateGameAction('win')" class="px-5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-xs font-bold text-white transition-all">Simulate Win Event</button>
+                        <button onclick="simulateGameAction('score')" class="px-5 py-2 rounded-full bg-accent-blue hover:bg-accent-blueGlow text-xs font-bold text-white transition-all">Generate High Score</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CORPORATE FOOTER -->
+    <footer id="docs" class="bg-dark-900 border-t border-white/5 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                
+                <!-- Brand block -->
+                <div class="md:col-span-2">
+                    <span class="text-2xl font-extrabold tracking-tight text-white block mb-4">
+                        very<span class="text-accent-blue font-light">.ly</span>
+                    </span>
+                    <p class="text-slate-400 text-sm max-w-sm leading-relaxed mb-6">
+                        An elite performance-focused gaming framework delivering high fidelity micro-experiences instantly to the browser.
+                    </p>
+                    <!-- Social icons / Technical platform badges -->
+                    <div class="flex items-center gap-4">
+                        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="p-2 rounded-full bg-dark-800 hover:bg-dark-700 text-slate-400 hover:text-white transition-colors" aria-label="GitHub Repository">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.193 22 16.44 22 12.017 22 6.484 17.522 2 12 2z"/></svg>
+                        </a>
+                        <a href="#" class="p-2 rounded-full bg-dark-800 hover:bg-dark-700 text-slate-400 hover:text-white transition-colors" aria-label="Documentation Wiki">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Technical Documentation Links Column -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-white mb-4">Technical Docs</h4>
+                    <ul class="space-y-3 text-sm text-slate-400">
+                        <li><a href="#" class="hover:text-accent-blueGlow transition-colors">WASM Integration</a></li>
+                        <li><a href="#" class="hover:text-accent-blueGlow transition-colors">Client SDK</a></li>
+                        <li><a href="#" class="hover:text-accent-blueGlow transition-colors">State Sync</a></li>
+                        <li><a href="#" class="hover:text-accent-blueGlow transition-colors">Deployment Wiki</a></li>
+                    </ul>
+                </div>
+
+                <!-- Ecosystem Links Column -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-white mb-4">Ecosystem</h4>
+                    <ul class="space-y-3 text-sm text-slate-400">
+                        <li><a href="https://v.very.ly" class="hover:text-accent-goldGlow transition-colors">v.very.ly</a></li>
+                        <li><a href="https://v2.very.ly" class="hover:text-accent-goldGlow transition-colors">v2.very.ly</a></li>
+                        <li><a href="https://v3.very.ly" class="hover:text-accent-goldGlow transition-colors">v3.very.ly</a></li>
+                        <li><a href="#" class="hover:text-accent-goldGlow transition-colors">Platform Status</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Bottom credentials -->
+            <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+                <p>&copy; 2024 very.ly. All rights reserved. Built for high-performance client-side rendering.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-slate-300 transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-slate-300 transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT INFRASTRUCTURE (SPA logic, dynamic favicon, loaders, simulators) -->
+    <script>
+        // Dynamic Favicon Generator & State Updater
+        function updateDynamicFavicon(emoji) {
+            const canvas = document.createElement('canvas');
+            canvas.height = 64;
+            canvas.width = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.font = '54px serif';
+            ctx.fillText(emoji, 0, 54);
+            
+            let link = document.querySelector("link[rel*='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.type = 'image/x-icon';
+                link.rel = 'shortcut icon';
+                document.head.appendChild(link);
+            }
+            link.href = canvas.toDataURL();
+        }
+
+        // Initialize with default controller emoji
+        updateDynamicFavicon('🎮');
+
+        // Dynamic State Variables for Dashboard Simulator
+        let activePlayers = 4821;
+        let latency = 12;
+        setInterval(() => {
+            // Simulate realistic light fluctuations
+            activePlayers += Math.floor(Math.random() * 11) - 5;
+            latency = Math.max(8, Math.min(25, latency + (Math.floor(Math.random() * 3) - 1)));
+            
+            document.getElementById('instances-val').innerText = activePlayers.toLocaleString();
+            document.getElementById('latency-val').innerText = `${latency}ms`;
+        }, 3000);
+
+        // Toggle Engine Performance Mode Simulator
+        let engineState = 2; // 0: Eco, 1: Balanced, 2: Overclocked
+        function togglePerformanceMode() {
+            const btnText = document.getElementById('engine-status');
+            if (engineState === 2) {
+                engineState = 0;
+                btnText.innerText = 'Eco Mode';
+                btnText.className = 'text-slate-400';
+            } else if (engineState === 0) {
+                engineState = 1;
+                btnText.innerText = 'Balanced';
+                btnText.className = 'text-accent-goldGlow';
+            } else {
+                engineState = 2;
+                btnText.innerText = 'Overclocked';
+                btnText.className = 'text-accent-blueGlow';
+            }
+        }
+
+        // Trigger Diagnostic Pulse Animation
+        function triggerPulseSim() {
+            const btnText = document.getElementById('pulse-btn-text');
+            const icon = document.getElementById('pulse-icon');
+            btnText.innerText = 'Broadcasting Network Pulse...';
+            icon.style.animationPlayState = 'running';
+            
+            // Apply pulse glow effect to the diagnostics container
+            const container = icon.closest('section');
+            container.classList.add('animate-glow');
+
+            setTimeout(() => {
+                btnText.innerText = 'Pulse Complete (100% Sync)';
+                icon.style.animationPlayState = 'paused';
+                container.classList.remove('animate-glow');
+                
+                setTimeout(() => {
+                    btnText.innerText = 'Inject Diagnostic Pulse';
+                }, 2000);
+            }, 1500);
+        }
+
+        // Launch Game Simulator (SPA Modal with Dynamic Loader)
+        function launchGame(gameName, gameUrl) {
+            const modal = document.getElementById('game-modal');
+            const loader = document.getElementById('modal-loader');
+            const progressBar = document.getElementById('loader-progress');
+            const loaderStatus = document.getElementById('loader-status');
+            const title = document.getElementById('modal-game-title');
+            const urlDisplay = document.getElementById('modal-game-url');
+            const sandboxName = document.getElementById('modal-sandbox-name');
+            const emojiDisplay = document.getElementById('modal-game-emoji');
+
+            // Determine Emoji based on game
+            let emoji = '🎮';
+            if (gameName.includes('Gun')) emoji = '🔫';
+            if (gameName.includes('Cars')) emoji = '🏎️';
+            if (gameName.trim() === 'Racing') emoji = '🏁';
+
+            // Set content
+            title.innerText = `Launching ${gameName}`;
+            urlDisplay.innerText = gameUrl;
+            sandboxName.innerText = gameName;
+            emojiDisplay.innerText = emoji;
+
+            // Update Dynamic Favicon to match active game
+            updateDynamicFavicon(emoji);
+
+            // Show Modal
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 50);
+
+            // Reset Loader
+            loader.style.opacity = '1';
+            loader.classList.remove('pointer-events-none');
+            progressBar.style.width = '0%';
+
+            // Simulate High-Performance loading sequence
+            const steps = [
+                { progress: 20, status: 'Initializing dynamic sandboxed iframe...' },
+                { progress: 50, status: 'Compiling WebAssembly binaries...' },
+                { progress: 80, status: 'Allocating WebGL canvas contexts...' },
+                { progress: 100, status: 'System Stable. Launching execution frame.' }
+            ];
+
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    progressBar.style.width = `${step.progress}%`;
+                    loaderStatus.innerText = step.status;
+                    
+                    if (step.progress === 100) {
+                        setTimeout(() => {
+                            loader.style.opacity = '0';
+                            loader.classList.add('pointer-events-none');
+                        }, 500);
+                    }
+                }, (index + 1) * 400);
+            });
+        }
+
+        // Close Game Modal
+        function closeGameModal() {
+            const modal = document.getElementById('game-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                // Revert favicon to default
+                updateDynamicFavicon('🎮');
+            }, 300);
+        }
+
+        // Simulated Actions Inside Sandbox
+        function simulateGameAction(type) {
+            if (type === 'win') {
+                alert('🏆 Success! Victory state synchronized to very.ly framework successfully.');
+            } else if (type === 'score') {
+                const randomScore = Math.floor(Math.random() * 90000) + 10000;
+                alert(`⚡ High Score Generated: ${randomScore}! Telemetry sent to ledger.`);
+            }
+        }
+    </script>
+</body>
+</html>
